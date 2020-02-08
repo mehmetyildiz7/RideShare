@@ -32,7 +32,10 @@ namespace AdessoRideShare.Business
 
         public TravelPlan GetTravelPlan(int travelPlanId)
         {
-            var plan = _rideShareDbContext.TravelPlans.Where(tp => tp.TravelPlanId == travelPlanId).Include("UserTravelPlans").First();
+            var plan = _rideShareDbContext.TravelPlans.Where(tp => tp.TravelPlanId == travelPlanId)
+                .Include(tp => tp.UserTravelPlans)
+                .ThenInclude(utp => utp.User)
+                .First();
             return plan;
         }
 
@@ -47,7 +50,7 @@ namespace AdessoRideShare.Business
         {
             var plans = _rideShareDbContext.TravelPlans
                 .Where(tp => tp.DestinationCityId == destinationCityId && tp.DepartureCityId == departureCityId)
-                .Include("UserTravelPlans").ToList();
+                .Include(tp => tp.UserTravelPlans).ToList();
 
             return plans;
         }

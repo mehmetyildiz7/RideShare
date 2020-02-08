@@ -9,6 +9,17 @@ using System.Threading.Tasks;
 
 namespace AdessoRideShare.Business
 {
+
+    public enum AttendStatus
+    {
+        IsOwner,
+        Successful,
+        Failure,
+        NoSeatsAvailable,
+        AlreadyAttended,
+        UserDoesntExist,
+    }
+
     public class UserService
     {
         private RideShareDbContext _rideShareDbContext;
@@ -22,7 +33,7 @@ namespace AdessoRideShare.Business
 
         public async Task<User> CreateUserAsync()
         {
-            var user = _rideShareDbContext.Users.Add(new User { });
+            var user = await _rideShareDbContext.Users.AddAsync(new User { });
             await _rideShareDbContext.SaveChangesAsync();
             return user.Entity;
         }
@@ -61,7 +72,7 @@ namespace AdessoRideShare.Business
             return _travelPlan;
         }
 
-        public bool AttendToTravelPlan(int userId, int travelPlanId)
+        public AttendStatus AttendToTravelPlan(int userId, int travelPlanId)
         {
             try
             {
@@ -70,11 +81,19 @@ namespace AdessoRideShare.Business
                     var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
                     var travelPlan = travelPlanService.GetTravelPlan(travelPlanId);
 
-                    var attendedUsers = travelPlan.UserTravelPlans.Where(x => x.IsUserOwner == false).ToList();
+                    var attendedUsers = travelPlan.UserTravelPlans.ToList();
+                    var ownerUser = attendedUsers.Where(x => x.IsUserOwner).First();
+                    if(ownerUser.UserId == userId) // If the owner user tries to attend, don't attend
+                    {
+                        return AttendStatus.IsOwner;
+                    }
+
+                    attendedUsers.Remove(ownerUser); // Remove the owner user from list
+
                     int availableSeatCount = travelPlan.SeatCount - attendedUsers.Count;
                     if(availableSeatCount <= 0) // Check if there is an available seat exists
                     {
-                        return false;
+                        return AttendStatus.NoSeatsAvailable;
                     }
                     else
                     {
@@ -82,24 +101,30 @@ namespace AdessoRideShare.Business
                         {
                             if(user.UserId == userId)
                             {
-                                return false; // If user already attended to travel plan return false
+                                return AttendStatus.AlreadyAttended; // If user already attended to travel plan return false
                             }
                         }
 
+                        var attendingUser = GetUser(userId);
+                        if(attendingUser == null)
+                        {
+                            return AttendStatus.UserDoesntExist; // if attending user doesn't exist return false
+                        }
                         travelPlan.UserTravelPlans.Add(new UserTravelPlan // Add the user to the travel plan and return true
                         {
-                            UserId = userId,
+                            User = attendingUser,
                             TravelPlan = travelPlan,
                             IsUserOwner = false,
                         });
+                        var result = _rideShareDbContext.Update(travelPlan);
                         _rideShareDbContext.SaveChanges();
-                        return true;
+                        return AttendStatus.Successful;
                     }
                 }
             }
             catch(Exception e)
             {
-                return false;
+                return AttendStatus.Failure;
             }
         }
     }

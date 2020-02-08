@@ -25,6 +25,26 @@ namespace AdessoRideShare.Web.Controllers
             _provider = provider;
         }
 
+        [HttpPut("CreateUser")]
+        [SwaggerResponse(200, Type = typeof(User))]
+        [SwaggerResponse(500)]
+        [Produces("application/json")]
+        public async Task<IActionResult> CreateUser()
+        {
+            try
+            {
+                using (var scope = _provider.CreateScope())
+                {
+                    var userService = scope.ServiceProvider.GetService<UserService>();
+                    return Ok(await userService.CreateUserAsync());
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         /// <summary>
         /// Returns the user object if found by given id
         /// </summary>
@@ -124,7 +144,11 @@ namespace AdessoRideShare.Web.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Sets the IsActive property of travel plan
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         [HttpPost("SetTravelPlanStatus")]
         [SwaggerResponse(200, Type = typeof(void))]
         [SwaggerResponse(500)]
@@ -137,6 +161,65 @@ namespace AdessoRideShare.Web.Controllers
                     var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
                     await travelPlanService.SetTravelPlanStatusAsync(input.TravelPlanId, input.IsActive);
                     return Ok();
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        /// <summary>
+        /// Tries to attend to given travel plan with given userId
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("AttendToTravelPlan")]
+        [SwaggerResponse(200, Type = typeof(AttendToTravelPlanDto))]
+        [SwaggerResponse(400)]
+        [SwaggerResponse(500)]
+        [Produces("application/json")]
+        public async Task<IActionResult> AttendToTravelPlan([FromQuery]AttendToTravelPlanInput input)
+        {
+            try
+            {
+                using (var scope = _provider.CreateScope())
+                {
+                    var userService = scope.ServiceProvider.GetService<UserService>();
+                    var result = userService.AttendToTravelPlan(input.UserId, input.TravelPlanId);
+                    var dto = new AttendToTravelPlanDto();
+                    dto.Status = result;
+
+                    if (result == AttendStatus.Successful)
+                    {
+                        dto.Message = "Successfully attended to travel plan.";
+                        return Ok(dto);
+                    }
+                    else if (result == AttendStatus.NoSeatsAvailable)
+                    {
+                        dto.Message = "No seats available.";
+                        return BadRequest(dto);
+                    }
+                    else if (result == AttendStatus.IsOwner)
+                    {
+                        dto.Message = "Attender is the owner of the travel plan";
+                        return BadRequest(dto);
+                    }
+                    else if (result == AttendStatus.AlreadyAttended)
+                    {
+                        dto.Message = "Already attended.";
+                        return BadRequest(dto);
+                    }
+                    else if (result == AttendStatus.UserDoesntExist)
+                    {
+                        dto.Message = "User doesn't exist";
+                        return BadRequest(dto);
+                    }
+                    else
+                    {
+                        dto.Message = "Couldn't attend to travel plan.";
+                        return BadRequest(dto);
+                    }
                 }
             }
             catch (Exception e)
