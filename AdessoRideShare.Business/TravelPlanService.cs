@@ -1,5 +1,6 @@
 ﻿using AdessoRideShare.Database.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,9 +18,16 @@ namespace AdessoRideShare.Business
 
         public async Task<TravelPlan> CreateTravelPlanAsync(TravelPlan travelPlan)
         {
-            var plan = await _rideShareDbContext.AddAsync(travelPlan);
-            await _rideShareDbContext.SaveChangesAsync();
-            return plan.Entity;
+            try
+            {
+                var plan = await _rideShareDbContext.AddAsync(travelPlan);
+                await _rideShareDbContext.SaveChangesAsync();
+                return plan.Entity;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         public TravelPlan GetTravelPlan(int travelPlanId)
