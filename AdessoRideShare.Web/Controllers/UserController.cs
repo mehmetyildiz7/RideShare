@@ -41,7 +41,7 @@ namespace AdessoRideShare.Web.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500);
+                return StatusCode(500, new { Message = e.Message });
             }
         }
 
@@ -91,7 +91,7 @@ namespace AdessoRideShare.Web.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500);
+                return StatusCode(500, new { Message = e.Message });
             }
         }
 
@@ -141,7 +141,7 @@ namespace AdessoRideShare.Web.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500);
+                return StatusCode(500, new { Message = e.Message });
             }
         }
 
@@ -174,7 +174,7 @@ namespace AdessoRideShare.Web.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500);
+                return StatusCode(500, new { Message = e.Message });
             }
         }
 
@@ -232,7 +232,52 @@ namespace AdessoRideShare.Web.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500);
+                return StatusCode(500, new { Message = e.Message });
+            }
+        }
+
+        [HttpPost("GetTravelPlans")]
+        [SwaggerResponse(200, Type = typeof(GetTravelPlansDto))]
+        [SwaggerResponse(404)]
+        [SwaggerResponse(500)]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetTravelPlans([FromQuery]GetTravelPlansInput input)
+        {
+            try
+            {
+                using (var scope = _provider.CreateScope())
+                {
+                    var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
+                    var travelPlans = travelPlanService.FindTravelPlans(input.DestinationCityId, input.DepartureCityId);
+                    if(travelPlans.Count <= 0)
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        var dto = new GetTravelPlansDto();
+                        foreach (var travelPlan in travelPlans)
+                        {
+                            dto.TravelPlans.Add(new TravelPlanDto
+                            {
+                                Date = travelPlan.Date,
+                                DepartureCityId = travelPlan.DepartureCityId,
+                                Description = travelPlan.Description,
+                                DestinationCityId = travelPlan.DestinationCityId,
+                                IsActive = travelPlan.IsActive,
+                                SeatCount = travelPlan.SeatCount,
+                                TravelPlanId = travelPlan.TravelPlanId,
+                            });
+                        }
+
+                        return Ok(dto);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Message = e.Message});
             }
         }
 

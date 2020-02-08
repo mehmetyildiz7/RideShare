@@ -54,7 +54,7 @@ namespace AdessoRideShare.Business
         public List<TravelPlan> FindTravelPlans(int destinationCityId, int departureCityId)
         {
             var plans = _rideShareDbContext.TravelPlans
-                .Where(tp => tp.DestinationCityId == destinationCityId && tp.DepartureCityId == departureCityId)
+                .Where(tp => tp.DestinationCityId == destinationCityId && tp.DepartureCityId == departureCityId && tp.IsActive == true)
                 .Include(tp => tp.UserTravelPlans).ToList();
 
             return plans;
