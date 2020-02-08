@@ -56,6 +56,24 @@ namespace AdessoRideShare.Database.Models
                 UserId = 1,
             });
 
+            modelBuilder.Entity<TravelPlan>().HasData(new TravelPlan
+            {
+                Date = DateTime.Now,
+                DepartureCityId = 1,
+                DestinationCityId = 2,
+                Description = "Migration Travel Plan",
+                IsActive = true,
+                SeatCount = 5,
+                TravelPlanId = 1,
+            });
+
+            modelBuilder.Entity<UserTravelPlan>().HasData(new UserTravelPlan
+            {
+                TravelPlanId = 1,
+                UserId = 1,
+                IsUserOwner = true,
+            });
+
         }
     }
 }

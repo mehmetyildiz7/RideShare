@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdessoRideShare.Business;
 using AdessoRideShare.Database.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,6 +30,8 @@ namespace AdessoRideShare.Web
         {
             services.AddControllers();
             services.AddDbContext<RideShareDbContext>(item => item.UseSqlServer(Configuration.GetConnectionString("myConnection")));
+            services.AddTransient<TravelPlanService>();
+            services.AddTransient<UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

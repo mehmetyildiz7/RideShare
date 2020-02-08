@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AdessoRideShare.Business\AdessoRideShare.Business.csproj" />
     <ProjectReference Include="..\AdessoRideShare.Database\AdessoRideShare.Database.csproj" />
   </ItemGroup>
 
