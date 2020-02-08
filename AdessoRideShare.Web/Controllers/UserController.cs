@@ -236,6 +236,11 @@ namespace AdessoRideShare.Web.Controllers
             }
         }
 
+        /// <summary>
+        /// Find the available travel plans with given departure city and destination city
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         [HttpPost("GetTravelPlans")]
         [SwaggerResponse(200, Type = typeof(GetTravelPlansDto))]
         [SwaggerResponse(404)]
