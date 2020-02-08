@@ -195,29 +195,28 @@ namespace AdessoRideShare.Web.Controllers
                         dto.Message = "Successfully attended to travel plan.";
                         return Ok(dto);
                     }
-                    else if (result == AttendStatus.NoSeatsAvailable)
-                    {
-                        dto.Message = "No seats available.";
-                        return BadRequest(dto);
-                    }
-                    else if (result == AttendStatus.IsOwner)
-                    {
-                        dto.Message = "Attender is the owner of the travel plan";
-                        return BadRequest(dto);
-                    }
-                    else if (result == AttendStatus.AlreadyAttended)
-                    {
-                        dto.Message = "Already attended.";
-                        return BadRequest(dto);
-                    }
-                    else if (result == AttendStatus.UserDoesntExist)
-                    {
-                        dto.Message = "User doesn't exist";
-                        return BadRequest(dto);
-                    }
                     else
                     {
-                        dto.Message = "Couldn't attend to travel plan.";
+                        if (result == AttendStatus.NoSeatsAvailable)
+                        {
+                            dto.Message = "No seats available.";
+                        }
+                        else if (result == AttendStatus.IsOwner)
+                        {
+                            dto.Message = "Attender is the owner of the travel plan";
+                        }
+                        else if (result == AttendStatus.AlreadyAttended)
+                        {
+                            dto.Message = "Already attended.";
+                        }
+                        else if (result == AttendStatus.UserDoesntExist)
+                        {
+                            dto.Message = "User doesn't exist";
+                        }
+                        else
+                        {
+                            dto.Message = "Couldn't attend to travel plan.";
+                        }
                         return BadRequest(dto);
                     }
                 }
@@ -227,5 +226,7 @@ namespace AdessoRideShare.Web.Controllers
                 return StatusCode(500);
             }
         }
+
+
     }
 }
