@@ -62,6 +62,12 @@ namespace AdessoRideShare.Business
 
         public async Task<TravelPlan> PublishTravelPlanAsync(int userId, TravelPlan travelPlan)
         {
+            var user = GetUser(userId);
+            if(user == null)
+            {
+                return null;
+            }
+
             TravelPlan _travelPlan;
             travelPlan.UserTravelPlans.Add(new UserTravelPlan
             {
