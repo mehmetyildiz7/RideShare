@@ -161,7 +161,7 @@ namespace AdessoRideShare.Web.Controllers
                 using (var scope = _provider.CreateScope())
                 {
                     var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
-                    var result = await travelPlanService.SetTravelPlanStatusAsync(input.TravelPlanId, input.IsActive);
+                    var result = travelPlanService.SetTravelPlanStatusAsync(input.UserId, input.TravelPlanId, input.IsActive);
                     if (result)
                     {
                         return Ok();

@@ -9,6 +9,8 @@ namespace AdessoRideShare.Web.Inputs
     public class SetTravelPlanStatusInput
     {
         [DefaultValue(1)]
+        public int UserId { get; set; }
+        [DefaultValue(1)]
         public int TravelPlanId { get; set; }
         [DefaultValue(false)]
         public bool IsActive { get; set; }
