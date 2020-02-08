@@ -128,14 +128,15 @@ namespace AdessoRideShare.Web.Controllers
                     {
                         dto.Status = false;
                         dto.Message = "Couldn't publish travel plan";
+                        return BadRequest(dto);
                     }
                     else
                     {
                         dto.Status = true;
                         dto.Message = "Travel plan has been published";
+                        return Ok(dto);
                     }
 
-                    return Ok(dto);
                 }
             }
             catch (Exception e)
@@ -151,6 +152,7 @@ namespace AdessoRideShare.Web.Controllers
         /// <returns></returns>
         [HttpPost("SetTravelPlanStatus")]
         [SwaggerResponse(200, Type = typeof(void))]
+        [SwaggerResponse(400)]
         [SwaggerResponse(500)]
         public async Task<IActionResult> SetTravelPlanStatus([FromQuery]SetTravelPlanStatusInput input)
         {
@@ -159,8 +161,15 @@ namespace AdessoRideShare.Web.Controllers
                 using (var scope = _provider.CreateScope())
                 {
                     var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
-                    await travelPlanService.SetTravelPlanStatusAsync(input.TravelPlanId, input.IsActive);
-                    return Ok();
+                    var result = await travelPlanService.SetTravelPlanStatusAsync(input.TravelPlanId, input.IsActive);
+                    if (result)
+                    {
+                        return Ok();
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
                 }
             }
             catch (Exception e)

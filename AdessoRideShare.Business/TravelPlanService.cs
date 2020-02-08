@@ -39,11 +39,16 @@ namespace AdessoRideShare.Business
             return plan;
         }
 
-        public async Task SetTravelPlanStatusAsync(int planId, bool isActive)
+        public async Task<bool> SetTravelPlanStatusAsync(int planId, bool isActive)
         {
             var plan = await _rideShareDbContext.FindAsync<TravelPlan>(planId);
+            if(plan == null)
+            {
+                return false;
+            }
             plan.IsActive = isActive;
             await _rideShareDbContext.SaveChangesAsync();
+            return true;
         }
 
         public List<TravelPlan> FindTravelPlans(int destinationCityId, int departureCityId)

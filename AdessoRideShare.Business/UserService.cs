@@ -47,10 +47,17 @@ namespace AdessoRideShare.Business
 
         public User GetUser(int userId)
         {
-            return _rideShareDbContext.Users.Where(x => x.UserId == userId)
-                .Include(user => user.UserTravelPlans)
-                .ThenInclude(utp => utp.TravelPlan)
-                .First();
+            try
+            {
+                return _rideShareDbContext.Users.Where(x => x.UserId == userId)
+                    .Include(user => user.UserTravelPlans)
+                    .ThenInclude(utp => utp.TravelPlan)
+                    .First();
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         public async Task<TravelPlan> PublishTravelPlanAsync(int userId, TravelPlan travelPlan)
@@ -78,12 +85,18 @@ namespace AdessoRideShare.Business
             {
                 using (var scope = _provider.CreateScope())
                 {
+                    var attendingUser = GetUser(userId);
+                    if (attendingUser == null)
+                    {
+                        return AttendStatus.UserDoesntExist; // if attending user doesn't exist return false
+                    }
+
                     var travelPlanService = scope.ServiceProvider.GetService<TravelPlanService>();
                     var travelPlan = travelPlanService.GetTravelPlan(travelPlanId);
 
                     var attendedUsers = travelPlan.UserTravelPlans.ToList();
                     var ownerUser = attendedUsers.Where(x => x.IsUserOwner).First();
-                    if(ownerUser.UserId == userId) // If the owner user tries to attend, don't attend
+                    if (ownerUser.UserId == userId) // If the owner user tries to attend, don't attend
                     {
                         return AttendStatus.IsOwner;
                     }
@@ -91,7 +104,7 @@ namespace AdessoRideShare.Business
                     attendedUsers.Remove(ownerUser); // Remove the owner user from list
 
                     int availableSeatCount = travelPlan.SeatCount - attendedUsers.Count;
-                    if(availableSeatCount <= 0) // Check if there is an available seat exists
+                    if (availableSeatCount <= 0) // Check if there is an available seat exists
                     {
                         return AttendStatus.NoSeatsAvailable;
                     }
@@ -99,17 +112,12 @@ namespace AdessoRideShare.Business
                     {
                         foreach (var user in attendedUsers)
                         {
-                            if(user.UserId == userId)
+                            if (user.UserId == userId)
                             {
                                 return AttendStatus.AlreadyAttended; // If user already attended to travel plan return false
                             }
                         }
 
-                        var attendingUser = GetUser(userId);
-                        if(attendingUser == null)
-                        {
-                            return AttendStatus.UserDoesntExist; // if attending user doesn't exist return false
-                        }
                         travelPlan.UserTravelPlans.Add(new UserTravelPlan // Add the user to the travel plan and return true
                         {
                             User = attendingUser,
@@ -122,7 +130,7 @@ namespace AdessoRideShare.Business
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return AttendStatus.Failure;
             }
