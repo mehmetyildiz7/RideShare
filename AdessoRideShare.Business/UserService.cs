@@ -1,4 +1,5 @@
 ﻿using AdessoRideShare.Database.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -33,9 +34,12 @@ namespace AdessoRideShare.Business
             await _rideShareDbContext.SaveChangesAsync();
         }
 
-        public async Task<User> GetUserAsync(int userId)
+        public User GetUser(int userId)
         {
-            return await _rideShareDbContext.FindAsync<User>(userId);
+            return _rideShareDbContext.Users.Where(x => x.UserId == userId)
+                .Include(user => user.UserTravelPlans)
+                .ThenInclude(utp => utp.TravelPlan)
+                .First();
         }
 
         public async Task<TravelPlan> PublishTravelPlanAsync(int userId, TravelPlan travelPlan)
